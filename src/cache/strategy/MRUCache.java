@@ -1,57 +1,51 @@
-package cache;
+package cache.strategy;
 
-import java.util.*;
+import cache.Cache;
+import cache.CacheEntity;
+import cache.Node;
 
-class Node<K, V> {
-    K key;
-    V value;
-    Node<K, V> prev;
-    Node<K, V> next;
+import java.util.HashMap;
+import java.util.Map;
 
-    public Node(K key, V value) {
-        this.key = key;
-        this.value = value;
-        this.next = null;
-        this.prev = null;
-    }
-}
-
-public class LRUCache<K, V> {
-    Map<K, Node<K, V>> keyNodeMap;
-    private final int capacity;
-    private final Node<K, V> head;
-    private final Node<K, V> tail;
+/*
 
 
-    public LRUCache(int size) {
-        capacity = size;
-        head = new Node<>(null, null);
-        tail = new Node<>(null, null);
-        head.next = tail;
-        tail.prev = head;
-        keyNodeMap = new HashMap<>();
+*/
+public class MRUCache<K, V> extends CacheEntity<K,V> implements Cache<K, V> {
+
+    private final Map<K, Node<K, V>> keyNodeMap;
+
+    public MRUCache(int size) {
+        super(size, new Node<>(null, null), new Node<>(null, null));
+        this.keyNodeMap = new HashMap<>();
     }
 
-    public V getValue(K key) {
+    @Override
+    public V get(K key) {
         if (!keyNodeMap.containsKey(key)) {
             return null;
         }
         Node<K, V> nodeValue = keyNodeMap.get(key);
         removeNode(nodeValue);
         addNodeAtHead(nodeValue);
+        printAllFromHead();
+        System.out.println(nodeValue.value);
+
         return nodeValue.value;
     }
 
-    public void putKey(K key, V value) {
+    @Override
+    public void put(K key, V value) {
         if (keyNodeMap.containsKey(key)) {
             removeNode(keyNodeMap.get(key));
         } else {
             // evict cache
             if (keyNodeMap.size() == capacity) {
-                removeNode(tail.prev);
+                removeNode(head.next);
             }
         }
         addNodeAtHead(new Node<>(key, value));
+        printAllFromHead();
     }
 
     private void addNodeAtHead(Node<K, V> node) {
@@ -74,6 +68,7 @@ public class LRUCache<K, V> {
     public void printAllFromHead() {
         Node<K, V> node = head.next;
         while (node.key != null) {
+            System.out.print(node.key + " : " + node.value + ", ");
             node = node.next;
         }
         System.out.println();
